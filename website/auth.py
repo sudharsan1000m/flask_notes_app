@@ -37,8 +37,9 @@ def sign_up():
         password1 = request.form.get("password1")
         password2 = request.form.get("password2")
 
-        user = User.querry.filter_by(email)
+        user = User.query.filter_by(email=email).first()
         if user:
+            print(user)
             flash("Email already exist",category = "error")
         elif len(email)<4:
             flash("Email must be greater than 3 characters", category="error")
@@ -53,7 +54,7 @@ def sign_up():
             db.session.add(new_user)
             db.session.commit()
             flash("account created", category="success")
-            login_user(user,remember=True)
+            login_user(new_user,remember=True)
             return redirect(url_for("views.home"))
     
     return render_template("sign_up.html", user = current_user)
