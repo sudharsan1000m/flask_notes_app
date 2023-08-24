@@ -5,21 +5,72 @@
 {%block content%}
 
 <h2 align = "center"> Notes </h2>
-<ul class = "list-group list-group-flush" id="notes">
-    {%for note in user.notes%}
-    <li class = "list-group-item">{{note.data}}
-        <button type = "button" class = "close" onClick="deleteNote({{note.id}})">
+<ul class = "list-group list-group-flush" id="notes" >
+
+    {%for i in range(user.notes | length)%}
+    
+    <li class = "list-group-item {{user.notes[i].id}}" id="note">
+        {{user.notes[i].data}}
+        <button type = "button" class = "btn btn-outline-primary btn-sm"  onclick="removeItem({{user.notes[i].id}})" >
             <span aria-hidden = "true">&times;</span>
         </button>
-    </li>
+        </li>
+        
     {%endfor%}
 </ul>
 <form method = "POST">
-    <textarea name = "note" id = "note" class = "form-control"></textarea>
+    <textarea name = "note" id = "add_note" class = "form-control"></textarea>
     <br/>
     <div align = "center">
-        <button type = "submit" class = "btn btn-primary">Add Note</button>
+        <button type = "button" class = "btn btn-primary" onclick="addNote();">Add Note</button>
     </div>
 </form>
 {%endblock%}
+{% block script %} 
+<script>
+    function eraseText() {
+    document.getElementById("add_note").value = "";
+}
+    function addNote(){
+        var note = document.getElementById("add_note").value;
+        console.log(note);
+        fetch("/add-note",{
+            method : "POST",
+            body: JSON.stringify({note: note}),
+        }).then(function(response){
+            const p = Promise.resolve(response.json());
+            p.then(value =>{
+                addItem(value["noteId"]);
+                eraseText();
+            })
+        })
+    }
+
+    function addItem(data){
+        var notes = document.getElementById("notes");
+        var note = document.getElementById("add_note");
+        console.log(notes);
+        var listId = notes.childElementCount;
+        var li = document.createElement("li");
+        li.className = `list-group-item ${data}`;
+        li.id = "note";
+        var inner = `{text} <button type = "button" class = "btn btn-outline-primary btn-sm"  onclick="removeItem(${data})"><span aria-hidden = "true">&times;</span></button>`;
+        li.innerHTML = inner.replace("{text}",note.value);
+        notes.appendChild(li);
+
+    }
+    function removeItem(noteId) {
+     // Declaring a variable to get select element
+     var notes = document.getElementsByClassName("list-group-item")
+
+     for(note of notes){
+        if(note.classList.contains(noteId)){
+            note.remove();
+        }
+     }
+
+     deleteNote(noteId);
+    }
+</script>
+ {% endblock %}
 

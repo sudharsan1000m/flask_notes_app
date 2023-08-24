@@ -8,16 +8,7 @@ views = Blueprint("views",__name__)
 @views.route("/", methods = ["GET","POST"])
 @login_required
 def home():
-    if request.method == "POST":
-        note = request.form.get("note")
 
-        if len(note)<1:
-            flash("Note is too small",category = "error")
-        else:
-            new_note = Note(data = note, user_id = current_user.id)
-            db.session.add(new_note)
-            db.session.commit()
-            flash("Note added",category="success")
     return render_template("home.html", user = current_user)
 
 @views.route("/delete-note", methods =["post"])
@@ -32,3 +23,20 @@ def delete_note():
             db.session.commit()
     return jsonify({})
 
+@views.route("/add-note", methods=["POST"])
+def add_note():
+    data = json.loads(request.data)
+    print(data)
+    note = data["note"]
+    if len(note)<1:
+        pass
+        # flash("Note is too small",category = "danger")
+    else:
+        new_note = Note(data = note, user_id = current_user.id)
+        db.session.add(new_note)
+        db.session.flush()
+        db.session.refresh(new_note)
+        id = new_note.id
+        db.session.commit()
+        # flash("Note added",category="success")
+    return jsonify({"noteId":id})
